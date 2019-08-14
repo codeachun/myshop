@@ -11,13 +11,11 @@
 |
  */
 Route::get('/', function () {
-    $data = ['name' => 'codeachun', 'say' => '嗨！'];
-    return view('welcome', $data);
+    return view('product.index');
 });
-
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+Route::get('/product', function () {
+    return view('product.index');
+});
 
 Auth::routes();
 
