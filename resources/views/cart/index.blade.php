@@ -1,5 +1,8 @@
 @extends('layouts.app')
 @section('content')
+@php
+$total = 0;
+@endphp
 <h1>我的購物車</h1>
 <table class="table table-striped">
     <tr>
@@ -24,21 +27,45 @@
             <div class="warning">该商品已下架</div>
             @endif
         </td>
-        <td class="text-right">{{ $cart->product->price }}</td>
-        <td class="text-center">{{ $cart->amount }}</td>
-        <td class="text-right">{{ $cart->product->price * $cart->amount }}</td>
+        <td class="text-right">
+            <span id="price-{{ $cart->id }}">
+                {{ $cart->product->price }}
+            </span>
+        </td>
+        <td class="text-center">
+            @if($cart->product->on_sale)
+            <input type="number" min="1" class="form-control text-center amount" name="amount[{{ $cart->product_id }}]"
+                value="{{ $cart->amount }}" data-cartid="{{ $cart->id }}">
+            @else
+            <div class="warning">该商品已下架</div>
+            @endif
+        </td>
+        <td class="text-right">
+            <span class="sum" id="sum-{{ $cart->id }}">
+                {{ $cart->product->price * $cart->amount }}
+            </span>
+        </td>
         <td nowrap>
-            <a href="#" class="btn btn-danger btn-sm btn-del-from-cart" data-id="{{ $cart->product_id }}">移除</a>
+            <a href="#" class="btn btn-danger btn-sm btn-del-from-cart" data-card_id="{{ $cart->id }}">移除</a>
         </td>
     </tr>
     @empty
-
+    @php
+        $total+=$cart->product->price * $cart->amount
+    @endphp
     <tr>
         <td>
             <h1>購物車空無一物</h1>
         </td>
     </tr>
     @endforelse
+    <tr>
+        <th colspan=4 class="text-right">共計</th>
+        <th nowrap class="text-right">
+            <span id="total">{{ $total }}</span>
+        </th>
+        <th>元</th>
+    </tr>
 </table>
 @endsection
 
@@ -48,7 +75,7 @@
 <script>
     $(document).ready(function () {
             $('.btn-del-from-cart').click(function () {
-                var product_id=$(this).data('id');
+                var card_id=$(this).data('card_id');
                 swal({
                     title: "確認要將該商品移除？",
                     icon: "warning",
@@ -59,11 +86,23 @@
                     if (!willDelete) {
                         return;
                     }
-                    axios.delete('/cart/' + product_id)
+                    axios.delete('/cart/' + card_id)
                     .then(function () {
                         location.reload();
                     })
                 });
+            });
+
+            $('.amount').change(function () {
+                var cartid = $(this).data('cartid');
+                var sum = $(this).val() * $('#price-'+cartid).text();
+                $('#sum-'+cartid).text(sum);
+
+                var total = 0;
+                $('.sum').each(function() {
+                total += Number($(this).text());
+                });
+                $('#total').text(total);
             });
         });
 </script>

@@ -86,7 +86,7 @@ class CartController extends Controller
      */
     public function destroy($id, Request $request)
     {
-        $request->user()->carts()->where('product_id', $id)->delete();
+        $request->user()->carts()->where('id', $id)->delete();
         return [];
     }
 }
