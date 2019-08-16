@@ -4,6 +4,8 @@
 $total = 0;
 @endphp
 <h1>我的購物車</h1>
+<form action="{{ route('order.store') }}" method="post" id="order-form">
+    @csrf
 <table class="table table-striped">
     <tr>
         <th colspan=2>商品名稱</th>
@@ -67,6 +69,17 @@ $total = 0;
         <th>元</th>
     </tr>
 </table>
+@if(count($user->carts))
+<div class="form-group row">
+    <label class="col-form-label col-sm-3 text-md-right">收貨地址</label>
+    <div class="col-sm-7">
+        <input type="text" class="form-control" name="address" value="{{ $user->address }}">
+    </div>
+    <div class="col-sm-2">
+        <button type="submit" class="btn btn-primary">送出訂單</button>
+    </div>
+</div>
+@endif
 @endsection
 
 
