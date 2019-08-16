@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Order;
+use App\OrderItem;
+use App\Product;
+use DB;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -14,13 +17,8 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        $orders = Order::query()
-            ->with(['items.product'])
-            ->where('user_id', $request->user()->id)
-            ->orderBy('created_at', 'desc')
-            ->paginate(5);
-
-        return view('order.index', compact('orders'));
+        $user = $request->user();
+        return view('order.index', compact('user'));
     }
 
     /**
@@ -41,9 +39,10 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        $user = $request->user();
-// 開啟一個資料庫交易
-        DB::transaction(function () use ($user, $request) {
+        DB::transaction(function () use ($request) {
+
+            $user = $request->user();
+
             // 建立一個訂單
             $order          = new Order;
             $order->address = $request->address;
@@ -54,8 +53,10 @@ class OrderController extends Controller
 
             $total = 0;
             // 計算所有購物車內容的數量及價格
-            foreach ($request->amount as $product_id => $amount) {
-                $product          = Product::find($product_id);
+            foreach ($request->amount as $cart_id => $amount) {
+                $product_id = $request->product[$cart_id];
+                $product    = Product::find($product_id);
+
                 $item             = new OrderItem;
                 $item->order_id   = $order->id;
                 $item->product_id = $product_id;
@@ -65,12 +66,12 @@ class OrderController extends Controller
                 $total += $product->price * $amount;
             }
 
-            // 更新訂單總金額
             $order->total = $total;
             $order->update();
 
             // 將下單的商品從購物車中移除
             $user->carts()->delete();
+
         });
 
         return redirect()->route('index');
