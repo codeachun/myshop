@@ -11,6 +11,7 @@
 |
  */
 Route::pattern('product', '[0-9]+');
+Route::pattern('id', '[0-9]+');
 
 Route::get('/', 'ProductController@index')->name('index');
 Route::get('/product', 'ProductController@index')->name('product.index');
@@ -18,6 +19,7 @@ Route::get('/product/{product}', 'ProductController@show')->name('product.show')
 
 Route::post('/cart/store', 'CartController@store')->name('cart.store');
 Route::get('/cart', 'CartController@index')->name('cart.index');
+Route::delete('/cart/{id}', 'CartController@destroy')->name('cart.destroy');
 
 Auth::routes();
 
